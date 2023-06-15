@@ -74,7 +74,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
   //  - - - - - Mínimo 2 (by Marc) - - - - - 
 
   const [allRatings, setAllRatings] = useState<RatingsEntity | null>(null);
-  const [ratingAverage, setRatingAverage] = useState<RatingsEntity | null>(null);
+  const [ratingAverage, setRatingAverage] = useState<number | null>(null);
+  const [raters, setRaters] = useState<string[] | null>(null);
 
   const ratingsMechanism = async () => {
     try {
@@ -92,10 +93,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
   
         if (activityRating) {
           setRatingAverage(activityRating.ratingAverage);
-          const raters = activityRating.idRaters || [];
+          setRaters(activityRating.idRaters);
           console.log("Average Rating: ", ratingAverage);
           console.log("ID of the Raters: ", raters);
-          // DIFERENCIAR SI YA HAS VOTADO O NO.
+
         } else {
           console.log("There's no rating for this activity: ", activityId);
           // CREAR (POST) UN RATING.
@@ -131,15 +132,22 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
 
         <h2>Valoració</h2>
         <h2 className="stars_amount">{ratingAverage ? `☆ ${ratingAverage}` : `Not Rated`}</h2>
-        <h1 className="stars_for_rating">
-          <span data-star="1">☆</span>
-          <span data-star="2">☆</span>
-          <span data-star="3">☆</span>
-          <span data-star="4">☆</span>
-          <span data-star="5">☆</span>
-        </h1>
-        <button className="rate_button" onClick={onClose}>Add Rating</button>
-
+        {raters && raters.includes(userId) ? (
+          <div>
+            <button className="rate_button_disabled" disabled={true}>Already Rated</button>
+          </div>
+        ) : (
+          <div>
+            <h1 className="stars_for_rating">
+              <span data-star="1">☆</span>
+              <span data-star="2">☆</span>
+              <span data-star="3">☆</span>
+              <span data-star="4">☆</span>
+              <span data-star="5">☆</span>
+            </h1>
+            <button className="rate_button" onClick={onClose}>Add Rating</button>
+          </div>
+        )}
 
         <p>Participantes: {activity.participantsActivity?.join(", ")}</p>
         <button onClick={onClose}>
