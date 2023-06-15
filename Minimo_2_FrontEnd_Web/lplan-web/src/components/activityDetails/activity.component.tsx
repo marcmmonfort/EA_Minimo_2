@@ -47,21 +47,27 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
 
   const showJoinButton = !isCreatorOfActivity;
 
+  //  - - - - - Mínimo 2 (by Marc) - - - - - 
+
+  const [allRatings, setAllRatings] = useState<RatingsEntity[] | null>(null);
+  const [ratingAverage, setRatingAverage] = useState<number | null>(null);
+  const [raters, setRaters] = useState<string[] | null>(null);
+  const [rate, setRate] = useState<number | null>(0);
+  const [currentRating, setCurrentRating] = useState<RatingsEntity | null>(null);
+  const [currentRatingId, setCurrentRatingId] = useState<string | null>(null);
+  const [currentRatingLength, setCurrentRatingLength] = useState<number | null>(null);
+
   const stars = Array.from(document.querySelectorAll('.stars_for_rating span[data-star]')) as HTMLElement[];
 
   stars.forEach(star => {
     star.addEventListener('click', () => {
       const selectedStar = star.dataset.star;
-
-      // Actualiza las estrellas anteriores a la seleccionada
       for (let i = 1; i <= parseInt(selectedStar!); i++) {
         const starElement = document.querySelector(`.stars_for_rating span[data-star="${i}"]`) as HTMLElement;
         if (starElement) {
           starElement.textContent = '★';
         }
       }
-
-      // Actualiza las estrellas posteriores a la seleccionada
       for (let i = parseInt(selectedStar!) + 1; i <= 5; i++) {
         const starElement = document.querySelector(`.stars_for_rating span[data-star="${i}"]`) as HTMLElement;
         if (starElement) {
@@ -70,12 +76,6 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
       }
     });
   });
-
-  //  - - - - - Mínimo 2 (by Marc) - - - - - 
-
-  const [allRatings, setAllRatings] = useState<RatingsEntity | null>(null);
-  const [ratingAverage, setRatingAverage] = useState<number | null>(null);
-  const [raters, setRaters] = useState<string[] | null>(null);
 
   const ratingsMechanism = async () => {
     try {
@@ -92,20 +92,60 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
         );
   
         if (activityRating) {
+          setCurrentRating(activityRating);
+          setCurrentRatingId(activityRating.uuid);
+          setCurrentRatingLength(activityRating.idRaters.length);
           setRatingAverage(activityRating.ratingAverage);
           setRaters(activityRating.idRaters);
           console.log("Average Rating: ", ratingAverage);
           console.log("ID of the Raters: ", raters);
-
         } else {
           console.log("There's no rating for this activity: ", activityId);
-          // CREAR (POST) UN RATING.
         }
       } else {
         console.log("No activity found.");
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleStarClick = (event: React.MouseEvent<HTMLSpanElement>) => {
+    const star = event.currentTarget;
+    const selectedStar = star.dataset.star ? parseInt(star.dataset.star, 10) : null;
+    setRate(selectedStar);
+  };
+
+  const handleRating = async () => {
+    // Si nunca se ha votado ...
+    if (!raters && activity.uuid && rate){
+      try {
+        const newRating: RatingsEntity = {
+          ratingType: "activities",
+          idRatedObject: activity.uuid,
+          ratingAverage: rate,
+          idRaters: [userId]
+        };
+        const response = await RatingsService.insertRating(newRating);
+        onClose();
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (raters && currentRating && ratingAverage && currentRatingId && currentRatingLength && activity.uuid && rate){
+      try {
+        const oldRatingAverage = ratingAverage;
+        const updatedRating: RatingsEntity = {
+          uuid: currentRatingId,
+          ratingType: "activities",
+          idRatedObject: activity.uuid,
+          ratingAverage: (oldRatingAverage*currentRatingLength + rate)/(currentRatingLength + 1),
+          idRaters: [...(currentRating.idRaters || []), userId]
+        };
+        const response = await RatingsService.updateRating(currentRatingId, updatedRating);
+        onClose();
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -139,13 +179,13 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ activity, o
         ) : (
           <div>
             <h1 className="stars_for_rating">
-              <span data-star="1">☆</span>
-              <span data-star="2">☆</span>
-              <span data-star="3">☆</span>
-              <span data-star="4">☆</span>
-              <span data-star="5">☆</span>
+              <span data-star={1} onClick={handleStarClick}>☆</span>
+              <span data-star={2} onClick={handleStarClick}>☆</span>
+              <span data-star={3} onClick={handleStarClick}>☆</span>
+              <span data-star={4} onClick={handleStarClick}>☆</span>
+              <span data-star={5} onClick={handleStarClick}>☆</span>
             </h1>
-            <button className="rate_button" onClick={onClose}>Add Rating</button>
+            <button className="rate_button" onClick={handleRating}>Rate with {rate} ☆</button>
           </div>
         )}
 
