@@ -6,8 +6,8 @@
 
 ### Commits de Referencia
 
-Commit Pre-Examen: 
-Commit de Entrega del Examen: 
+* Commit Pre-Examen: 
+* Commit de Entrega del Examen:
 
 ### Estado del Mínimo 2 🔧
 
