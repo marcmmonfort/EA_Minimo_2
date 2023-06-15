@@ -8,6 +8,8 @@ import "./createActivity.page.css";
 import { setDate } from "date-fns";
 import { useTranslation } from 'react-i18next';
 
+import { RatingsService } from "../../services/ratings.service";
+
 const CreateActivity = () => {
   const [activity, setActivity] = useState<ActivityEntity>({
     nameActivity: "",
@@ -25,12 +27,7 @@ const CreateActivity = () => {
   const {t}=useTranslation();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-
-  
-    
-    
-    
+    const { name, value } = event.target; 
   
     if (name === "creatorActivity") {
       setActivity((prevActivity) => ({

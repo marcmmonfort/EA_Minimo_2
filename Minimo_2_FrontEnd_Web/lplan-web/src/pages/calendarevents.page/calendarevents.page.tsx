@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSignOutAlt, faBell, faPlusCircle, faPlus } from '@fortawesome/free-solid-svg-icons';
 import "./calendarevents.page.css"
 
+import { RatingsService } from "../../services/ratings.service";
 
 // Fondo de pantalla personalizado ...
 import backgroundImage from '../../assets/images/background_5.jpg';
